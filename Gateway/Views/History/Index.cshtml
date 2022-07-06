@@ -1,0 +1,77 @@
+﻿@{
+    ViewData["Title"] = "History";
+}
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="fs-5 fw-bold mb-0">Транзакции</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive py-4">
+                <table id="table" class="table table-flush" style="width: 100%">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Время</th>
+                            <th>Платеж для</th>
+                            <th>Сумма</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function getStatus(status){
+        switch (status) {
+        case 0:
+            return '<div class="d-flex align-items-center"><div class="bg-warning dot rounded-circle me-1"></div><span>Ожидает оплаты</span></div>'
+        case 1:
+            return '<div class="d-flex align-items-center"><div class="bg-success dot rounded-circle me-1"></div><span>Оплачено</span></div>'
+        case 2:
+            return '<div class="d-flex align-items-center"><div class="bg-danger dot rounded-circle me-1"></div><span>Истек срок</span></div>'
+        case 3:
+            return '<div class="d-flex align-items-center"><div class="bg-danger dot rounded-circle me-1"></div><span>Ошибка оплаты</span></div>'
+        case 4:
+            return '<div class="d-flex align-items-center"><div class="bg-danger dot rounded-circle me-1"></div><span>Отменена</span></div>'
+        case 5:
+            return '<div class="d-flex align-items-center"><div class="bg-danger dot rounded-circle me-1"></div><span>Отклонена</span></div>'
+        case 6:
+            return '<div class="d-flex align-items-center"><div class="bg-danger dot rounded-circle me-1"></div><span>Возвращена</span></div>'
+        }
+    }
+
+    $(document).ready(function() {
+
+        $('#table').DataTable({
+            language: { url: '/lib/datatables/ru.json' },
+            lengthChange: false,
+            pageLength: 50,
+            stateSave: true,
+            order: [[1, 'desc']],
+            serverSide: true,
+            ajax: function (data, callback, settings) {
+                APITable(callback,
+                    `/history/table`,
+                    { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+            },
+            columns: [
+                { title: "#", data: "id" },
+                { title: "Время", data: "create_date", render: function ( data, type, row, meta ) { if (type === 'display') { return moment(data).format('HH:mm') } else { return moment(data).unix() } } },
+                { title: "Платеж для", data: "description" },
+                { title: "Сумма", data: "amount", render: function ( data, type, row, meta ) { if (type === 'display') { return `${data} ₽ (${row.user_amount} ₽)` } else { return data } } },
+                { title: "Статус", data: "status", render: function ( data, type, row, meta ) { if (type === 'display') { return getStatus(data) } else { return data } } }
+            ]
+        });
+    });
+</script>
+}

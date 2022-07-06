@@ -1,0 +1,52 @@
+﻿@{
+    ViewData["Title"] = "HostedLogger";
+}
+
+<div class="col-12 mb-4">
+    <div class="card card-body border-0 shadow">
+        <div class="d-flex flex-row align-items-center">
+            <h2 class="fs-5 fw-bold mb-0 pe-3 text-nowrap">Сервис</h2>
+            <select class="form-select" id="service" onchange="reloadData();">
+                @foreach (string service in ViewBag.Services)
+                {
+                    <option value="@service">@service</option>
+                }
+            </select>
+            <a href="#" class="btn btn-sm btn-gray-800 ms-2 d-inline-flex align-items-center animate-up-2" onclick="reloadData();">
+                <svg class="icon icon-xs" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="col-12 mb-4">
+    <div class="card border-0 shadow">
+        <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="fs-5 fw-bold mb-0">Логи</h2>
+                    </div>
+                </div>
+            </div>
+        <div class="card-body p-3">
+            <textarea class="form-control" id="logs" rows="20"></textarea>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var service = document.querySelector('#service');
+    var logs = document.querySelector('#logs');
+
+    function reloadData(){
+        APIOp((json) => {
+                logs.value = json.join('\r\n');;
+            }, `./hostedlogs?service=${service.options[service.options.selectedIndex].value}`, { method: 'GET', headers: { 'Content-Type': 'application/json;charset=utf-8' }});
+    }
+
+    $(document).ready(function() {
+        reloadData();
+    });
+</script>
+}

@@ -1,0 +1,437 @@
+﻿@{
+    ViewData["Title"] = "Settings";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card card-body border-0 shadow mb-4">
+            <h2 class="h5 mb-4">Настройки</h2>
+
+            <ul class="list-group list-group-flush">
+
+                <li class="list-group-item d-flex align-items-center justify-content-between px-0 border-bottom">
+                    <div>
+                        <h3 class="h6 mb-1">Работа сервиса</h3>
+                        <p class="small pe-4">Включение/выключение возможности создания платежей пользователями</p>
+                    </div>
+                    <div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="service_work">
+                        </div>
+                    </div>
+                </li>
+
+                <li class="list-group-item d-flex align-items-center justify-content-between px-0 border-bottom">
+                    <div>
+                        <h3 class="h6 mb-1">Создание новых сделок</h3>
+                        <p class="small pe-4">Включение/выключение возможности создания новых сделок</p>
+                    </div>
+                    <div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="isCreateTransactionsEnabled">
+                        </div>
+                    </div>
+                </li>
+
+                <li class="list-group-item d-flex align-items-center justify-content-between px-0 border-bottom">
+                    <div>
+                        <h3 class="h6 mb-1">Сервис проверки транзакций</h3>
+                        <p class="small pe-4">Включение/выключение обновления статуса ожидающих оплаты транзакий (каждые 30 секунд)</p>
+                    </div>
+                    <div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="hostedTransactionService_work">
+                        </div>
+                    </div>
+                </li>
+
+                <li class="list-group-item px-0 border-bottom">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h3 class="h6 mb-1">Товары мерчантов</h3>
+                            <p class="small pe-4">Добавление/изменение товаров разных мерчантов. Продукт должен полностью соответствовать передаваемому в платежный шлюз продукту.</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-gray-800 mt-2 animate-up-2" type="submit" onclick="addNewMerchantProduct();">Добавить новый продукт</button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="table" class="table table-flush" style="width: 100%">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Мерчант</th>
+                                    <th>Продукт</th>
+                                    <th>Стоимость</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </li>
+
+                <li class="list-group-item px-0 border-bottom">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h3 class="h6 mb-1">Расходы мерчантов</h3>
+                            <p class="small pe-4">Добавление/изменение процента расходов мерчантов.</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-gray-800 mt-2 animate-up-2" type="submit" onclick="addNewMerchantExpense();">Добавить</button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="tableExpense" class="table table-flush" style="width: 100%">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Мерчант</th>
+                                    <th>Процент</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </li>
+
+            </ul>
+
+
+            <div class="mt-3 d-flex justify-content-between">
+                <button class="btn btn-gray-800 mt-2 animate-up-2" type="submit" onclick="saveSettings();">Сохранить настройки</button>
+                <button class="btn btn-gray-800 mt-2 animate-up-2" type="submit" onclick="getMyIp();">Получить IP сервера</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="merchantProductModal" tabindex="-1" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="h6 modal-title">Продукт</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label>Мерчант</label>
+                    <select class="form-select" id="merchant">
+                        @foreach (string merchant in ViewBag.Merchants)
+                        {
+                            <option value="@merchant">@merchant</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label>Продукт</label>
+                    <input type="text" class="form-control" id="product">
+                </div>
+                <div class="mb-3">
+                    <label>Продукт ID</label>
+                    <input type="text" class="form-control" id="productId">
+                </div>
+                <div class="mb-3">
+                    <label>Стоимость</label>
+                    <input type="text" class="form-control" id="amount">
+                    <small class="form-text text-muted">В качестве десятичного разделителя использовать точки (100.01)</small>
+                </div>
+                <input type="text" class="form-control" id="merchantProductId" hidden>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="deleteBtn" onclick="deleteProduct();">Удалить</button>
+                <button type="button" class="btn btn-secondary" id="saveNewBtn" onclick="saveNewProduct();">Сохранить</button>
+                <button type="button" class="btn btn-secondary" id="saveOldBtn" onclick="saveOldProduct();">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="merchantExpenseModal" tabindex="-1" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="h6 modal-title">Расходы</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label>Мерчант</label>
+                    <select class="form-select" id="merchantExpense">
+                        @foreach (string merchant in ViewBag.Merchants)
+                        {
+                            <option value="@merchant">@merchant</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label>Процент</label>
+                    <input type="text" class="form-control" id="percentExpense">
+                    <small class="form-text text-muted">В качестве десятичного разделителя использовать точки (100.01)</small>
+                </div>
+                <input type="text" class="form-control" id="merchantExpenseId" hidden>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="deleteExpenseBtn" onclick="deleteExpense();">Удалить</button>
+                <button type="button" class="btn btn-secondary" id="saveNewExpenseBtn" onclick="saveNewExpense();">Сохранить</button>
+                <button type="button" class="btn btn-secondary" id="saveOldExpenseBtn" onclick="saveOldExpense();">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var merchantProductModal = new bootstrap.Modal(document.getElementById('merchantProductModal'));
+    var modalDeleteBtn = document.querySelector('#deleteBtn');
+    var modalSaveNewBtn = document.querySelector('#saveNewBtn');
+    var modalSaveOldBtn = document.querySelector('#saveOldBtn');
+    var modalMerchantProductId = document.querySelector('#merchantProductId');
+    var modalMerchant = document.querySelector('#merchant');
+    var modalProduct = document.querySelector('#product');
+    var modalProductId = document.querySelector('#productId');
+    var modalAmount = document.querySelector('#amount');
+
+    var merchantExpenseModal = new bootstrap.Modal(document.getElementById('merchantExpenseModal'));
+    var merchantExpense = document.querySelector('#merchantExpense');
+    var percentExpense = document.querySelector('#percentExpense');
+    var merchantExpenseId = document.querySelector('#merchantExpenseId');
+    var deleteExpenseBtn = document.querySelector('#deleteExpenseBtn');
+    var saveNewExpenseBtn = document.querySelector('#saveNewExpenseBtn');
+    var saveOldExpenseBtn = document.querySelector('#saveOldExpenseBtn');
+
+    var service_work = document.querySelector('#service_work');
+    var hostedTransactionService_work = document.querySelector('#hostedTransactionService_work');
+    var isCreateTransactionsEnabled = document.querySelector('#isCreateTransactionsEnabled');
+
+    var dataSet = [];
+    var table = $('#table').DataTable({
+        language: { url: '/lib/datatables/ru.json' },
+        stateSave: true,
+        lengthChange: false,
+        info: false,
+        paging: false,
+        searching: false,
+        data: dataSet,
+        columns: [
+            { title: "Мерчант", data: "merchantName" },
+            { title: "Продукт", data: "productName" },
+            { title: "Стоимость", data: "amount" },
+            { title: "", data: null, className: "text-center", searchable: false, render: function ( data, type, row, meta ) { return `<button class="btn btn-sm btn-outline-success" type="button" editId="${row.id}" onclick="editMerchantProduct(this);">Редактировать</button>` } }
+        ]
+    });
+
+    var dataSetExpense = [];
+    var tableExpense = $('#tableExpense').DataTable({
+        language: { url: '/lib/datatables/ru.json' },
+        stateSave: true,
+        lengthChange: false,
+        info: false,
+        paging: false,
+        searching: false,
+        data: dataSetExpense,
+        columns: [
+            { title: "Мерчант", data: "merchantName" },
+            { title: "Процент", data: "expensePercent" },
+            { title: "", data: null, className: "text-center", searchable: false, render: function ( data, type, row, meta ) { return `<button class="btn btn-sm btn-outline-success" type="button" editId="${row.id}" onclick="editMerchantExpense(this);">Редактировать</button>` } }
+        ]
+    });
+
+    $(document).ready(function() {
+        getSettings();
+    });
+
+    function getSettings(){
+        APIOp((json) => {
+                dataSet = json.merchantsProducts ?? [];
+                dataSetExpense = json.merchantsExpenses ?? [];
+                $('#table').DataTable().clear().rows.add(dataSet).draw();
+                $('#tableExpense').DataTable().clear().rows.add(dataSetExpense).draw();
+
+                service_work.checked = json.isEnabled;
+                hostedTransactionService_work.checked = json.isHostedTransactionCheckerEnabled;
+                isCreateTransactionsEnabled.checked = json.isCreateTransactionsEnabled;
+
+            }, `./getsettings`);
+    }
+
+    function saveSettings(){
+        let data = {
+            isEnabled: service_work.checked,
+            isHostedTransactionCheckerEnabled: hostedTransactionService_work.checked,
+            isCreateTransactionsEnabled: isCreateTransactionsEnabled.checked
+        };
+
+        APIOp((json) => {
+                showSuccess('Настройки сохранены')
+                getSettings();
+            }, `./savesettings`, { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+    }
+
+    function addNewMerchantProduct(){
+
+        modalDeleteBtn.hidden = true;
+        modalSaveNewBtn.hidden = false;
+        modalSaveOldBtn.hidden = true;
+
+        modalMerchantProductId.value = 0;
+        modalMerchant.value = '';
+        modalProduct.value = '';
+        modalProductId.value = '';
+        modalAmount.value = '';
+
+        merchantProductModal.show();
+    }
+
+    function editMerchantProduct(e){
+        let data = dataSet.find(x => x.id == e.getAttribute('editId'));
+
+        modalDeleteBtn.hidden = false;
+        modalSaveNewBtn.hidden = true;
+        modalSaveOldBtn.hidden = false;
+
+        modalMerchantProductId.value = data.id;
+        modalMerchant.value = data.merchantName;
+        modalProduct.value = data.productName;
+        modalProductId.value = data.productId;
+        modalAmount.value = data.amount;
+
+        merchantProductModal.show();
+
+    }
+
+    function saveOldProduct(){
+
+        let data = {
+            Id: parseInt(modalMerchantProductId.value),
+            MerchantName: modalMerchant.value,
+            ProductName: modalProduct.value,
+            ProductId: modalProductId.value,
+            Amount: parseFloat(modalAmount.value)
+        };
+
+        APIOp((json) => {
+                showSuccess(`Продукт изменен успешно`);
+                getSettings();
+            }, `./savemerchantproduct`, { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+
+    }
+
+    function saveNewProduct(){
+
+        let data = {
+            Id: parseInt(modalMerchantProductId.value),
+            MerchantName: modalMerchant.value,
+            ProductName: modalProduct.value,
+            ProductId: modalProductId.value,
+            Amount: parseFloat(modalAmount.value)
+        };
+
+        APIOp((json) => {
+                showSuccess('Новый продукт добавлен успешно');
+                getSettings();
+                merchantProductModal.hide();
+            }, `./savemerchantproduct`, { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+    }
+
+    function deleteProduct(){
+        let data = {
+            Id: parseInt(modalMerchantProductId.value),
+            MerchantName: modalMerchant.value,
+            ProductName: modalProduct.value,
+            ProductId: modalProductId.value,
+            Amount: parseFloat(modalAmount.value)
+        };
+
+        APIOp((json) => {
+                showSuccess('Продукт удален успешно');
+                getSettings();
+                merchantProductModal.hide();
+            }, `./deletemerchantproduct`, { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+    }
+
+
+
+    function addNewMerchantExpense(){
+
+        deleteExpenseBtn.hidden = true;
+        saveNewExpenseBtn.hidden = false;
+        saveOldExpenseBtn.hidden = true;
+
+        merchantExpenseId.value = 0;
+        merchantExpense.value = '';
+        percentExpense.value = '';
+
+        merchantExpenseModal.show();
+    }
+
+    function editMerchantExpense(e){
+        let data = dataSetExpense.find(x => x.id == e.getAttribute('editId'));
+
+        deleteExpenseBtn.hidden = false;
+        saveNewExpenseBtn.hidden = true;
+        saveOldExpenseBtn.hidden = false;
+
+        merchantExpenseId.value = data.id;
+        merchantExpense.value = data.merchantName;
+        percentExpense.value = data.expensePercent;
+
+        merchantExpenseModal.show();
+
+    }
+
+    function saveOldExpense(){
+
+        let data = {
+            Id: parseInt(merchantExpenseId.value),
+            MerchantName: merchantExpense.value,
+            ExpensePercent: parseFloat(percentExpense.value)
+        };
+
+        APIOp((json) => {
+                showSuccess(`Продукт изменен успешно`);
+                getSettings();
+            }, `./savemerchantexpense`, { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+
+    }
+
+    function saveNewExpense(){
+
+        let data = {
+            Id: parseInt(merchantExpenseId.value),
+            MerchantName: merchantExpense.value,
+            ExpensePercent: parseFloat(percentExpense.value)
+        };
+
+        APIOp((json) => {
+                showSuccess('Новый продукт добавлен успешно');
+                getSettings();
+                merchantExpenseModal.hide();
+            }, `./savemerchantexpense`, { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+    }
+
+    function deleteExpense(){
+        let data = {
+            Id: parseInt(merchantExpenseId.value),
+            MerchantName: merchantExpense.value,
+            ExpensePercent: parseFloat(percentExpense.value)
+        };
+
+        APIOp((json) => {
+                showSuccess('Продукт удален успешно');
+                getSettings();
+                merchantExpenseModal.hide();
+            }, `./deletemerchantexpense`, { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+    }
+
+    function getMyIp(){
+        APIOp((json) => {
+                Swal.fire(
+                  'Получено',
+                  json,
+                  'success'
+                )
+            }, `./getmyip`);
+    }
+</script>
+}

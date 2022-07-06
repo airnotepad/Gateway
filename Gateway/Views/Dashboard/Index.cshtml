@@ -1,0 +1,188 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="fs-5 fw-bold mb-0">Новый платеж</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-3">
+                <div class="row d-flex justify-content-center">
+                    <div class="col-lg-3 col-sm-4 gy-2">
+                        <input class="form-control" id="email" type="email" placeholder="Email получателя" required="">
+                    </div>
+                    <div class="col-lg-3 col-sm-4 gy-2">
+                        <input class="form-control" id="description" type="text" placeholder="От кого?" required="">
+                    </div>
+                    <div class="col-lg-3 col-sm-4 gy-2">
+                        <select class="form-select" id="amount" required="">
+                            @foreach (var Product in ViewBag.Products)
+                            {
+                                <option value="@Product.Id" amount="@Product.Amount">@Product.Amount RUB</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-lg-1 col-sm-2 d-flex justify-content-center gy-2 ">
+                        <button class="btn btn-gray-800 animate-up-2" onclick="createTransaction();">Создать</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="fs-5 fw-bold mb-0">Текущие платежи</h2>
+                    </div>
+                    <div class="col text-end">
+                        <a href="#" class="btn btn-sm btn-primary animate-up-2" id="refreshButton" data-bs-toggle="tooltip" data-bs-placement="top" title="" data-bs-original-title="Обновлено в 00:00:00" onclick="refreshDashboardTable();">
+                            <span class="spinner-border spinner-border-sm visually-hidden" role="status" aria-hidden="true"></span>
+                            <span>Обновить</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0 pt-3">
+                <div class="table-responsive">
+                    <table id="table" class="table table-flush" style="width: 100%">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Время</th>
+                                <th>Платеж для</th>
+                                <th>Сумма</th>
+                                <th>Статус</th>
+                                <th>Ссылка</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="/lib/clipboard.js/clipboard.min.js"></script>
+
+<script>
+    var refreshButton = document.querySelector('#refreshButton');
+    var email = document.querySelector('#email');
+    var description = document.querySelector('#description');
+    var amount = document.querySelector('#amount');
+
+    function createTransaction(){
+
+        if (email.value == '')
+        {
+            email.classList.add('is-invalid');
+            setTimeout(function() { email.classList.remove('is-invalid') }, 5000);
+            showError('Не указан email получателя');
+            
+            return;
+        }
+
+        if (description.value == '')
+        {
+            description.classList.add('is-invalid');
+            setTimeout(function() { description.classList.remove('is-invalid') }, 5000);
+            showError('Не указано от кого будет оплата');
+
+            return;
+        }
+
+        let data = {
+            amount: parseFloat(amount.options[amount.selectedIndex].attributes['amount'].value),
+            productid: parseInt(amount.options[amount.selectedIndex].value),
+            description: description.value,
+            email: email.value
+        };
+
+        APIOp((json) => {
+                showSuccess('Транзакция создана')
+                refreshDashboardTable();
+                amount.selectedIndex = 0;
+                description.value = '';
+                email.value = '';
+            }, `/dashboard/createtransaction`, { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+    }
+
+    function refreshDashboardTable(){
+        $('#table').DataTable().ajax.reload();
+    }
+
+    function getStatus(status){
+        switch (status) {
+        case 0:
+            return '<div class="d-flex align-items-center"><div class="bg-warning dot rounded-circle me-1"></div><span>Ожидает оплаты</span></div>'
+        case 1:
+            return '<div class="d-flex align-items-center"><div class="bg-success dot rounded-circle me-1"></div><span>Оплачено</span></div>'
+        case 2:
+            return '<div class="d-flex align-items-center"><div class="bg-danger dot rounded-circle me-1"></div><span>Истек срок</span></div>'
+        case 3:
+            return '<div class="d-flex align-items-center"><div class="bg-danger dot rounded-circle me-1"></div><span>Ошибка оплаты</span></div>'
+        case 4:
+            return '<div class="d-flex align-items-center"><div class="bg-danger dot rounded-circle me-1"></div><span>Отменена</span></div>'
+        case 5:
+            return '<div class="d-flex align-items-center"><div class="bg-danger dot rounded-circle me-1"></div><span>Отклонена</span></div>'
+        case 6:
+            return '<div class="d-flex align-items-center"><div class="bg-danger dot rounded-circle me-1"></div><span>Возвращена</span></div>'
+        }
+    }
+
+    function getButtons(data){
+        if (data.status == 0)
+            return `<div class="btn-group"><button type="button" class="btn btn-sm btn-outline-success btn-copy" data-clipboard-text="${data.pay_ref}">Копировать</button></div>`
+        else
+            return ``;
+    }
+
+    $(document).ready(function() {
+
+        $('#table').DataTable({
+            language: { url: '/lib/datatables/ru.json' },
+            stateSave: true,
+            lengthChange: false,
+            order: [[4, 'asc'], [1, 'desc']],
+            info: false,
+            paging: false,
+            ajax: function (data, callback, settings) {
+                APITableWithPreload(
+                    function() { refreshButton.attributes['data-bs-original-title'].value = `Обновлено в ${moment().format('HH:mm:ss')}`; },
+                    callback,
+                    `/dashboard/table`,
+                    { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+            },
+            columns: [
+                { title: "#", data: "id" },
+                { title: "Время", data: "date", render: function ( data, type, row, meta ) { if (type === 'display') { return moment(data).format('HH:mm') } else { return moment(data).unix() } } },
+                { title: "Платеж для", data: "description" },
+                { title: "Сумма", data: "amount", render: function ( data, type, row, meta ) { if (type === 'display') { return `${data} ₽ (${row.user_amount} ₽)` } else { return data } } },
+                { title: "Статус", data: "status", render: function ( data, type, row, meta ) { if (type === 'display') { return getStatus(data) } else { return data } } },
+                { title: "", data: null, className: "text-center", searchable: false, render: function ( data, type, row, meta ) { return getButtons(row) } }
+            ]
+        });
+
+        var clipboard = new ClipboardJS('.btn-copy');
+        clipboard.on('success', function(e) {
+            showSuccess('Ссылка скопирована успешно');
+            e.clearSelection();
+        });
+
+        clipboard.on('error', function(e) {
+            showError('Ошибка при копировании');
+        });
+    });
+</script>
+}

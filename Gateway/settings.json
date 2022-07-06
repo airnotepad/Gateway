@@ -1,0 +1,35 @@
+{
+  "IsEnabled": true,
+  "IsHostedTransactionCheckerEnabled": true,
+  "IsCreateTransactionsEnabled": true,
+  "MerchantsProducts": [
+    {
+      "Id": 1,
+      "MerchantName": "TestMerchant",
+      "ProductName": "Продукт 1",
+      "ProductId": 18,
+      "Amount": 84000.0
+    },
+    {
+      "Id": 2,
+      "MerchantName": "TestMerchant",
+      "ProductName": "Продукт 2",
+      "ProductId": 19,
+      "Amount": 11000.0
+    },
+    {
+      "Id": 3,
+      "MerchantName": "TestMerchant",
+      "ProductName": "Продукт 3",
+      "ProductId": 20,
+      "Amount": 1000.0
+    }
+  ],
+  "MerchantsExpenses": [
+    {
+      "Id": 1,
+      "MerchantName": "TestMerchant",
+      "ExpensePercent": 9.0
+    }
+  ]
+}

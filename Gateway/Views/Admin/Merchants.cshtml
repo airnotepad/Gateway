@@ -1,0 +1,225 @@
+﻿@{
+    ViewData["Title"] = "Merchants";
+}
+
+<div class="col-12 mb-4">
+    <div class="card card-body border-0 shadow">
+        <div class="d-flex flex-row align-items-center">
+            <h2 class="fs-5 fw-bold mb-0 pe-3 text-nowrap">Мерчант</h2>
+            <select class="form-select" id="merchant" onchange="reloadData();">
+                @foreach (string merchant in ViewBag.Merchants)
+                {
+                    <option value="@merchant">@merchant</option>
+                }
+            </select>
+            <a href="#" class="btn btn-sm btn-gray-800 ms-2 d-inline-flex align-items-center animate-up-2" onclick="reloadData();">
+                <svg class="icon icon-xs" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-2">
+        <div class="card mb-3 mb-lg-0">
+            <div class="card-body">
+                <ul class="nav nav-pills square nav-fill flex-column vertical-tab" role="tablist">
+                    <li class="nav-item m-0">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#tab-table" role="tab" aria-controls="tab-table" aria-selected="true"><span class="d-block">Таблица ордеров</span></a>
+                    </li>
+                    <li class="nav-item m-0">
+                        <a class="nav-link" data-bs-toggle="tab" href="#tab-create" role="tab" aria-controls="tab-create" aria-selected="false"><span class="d-block">Создание ордера</span></a>
+                    </li>
+                    <li class="nav-item m-0">
+                        <a class="nav-link m-0" data-bs-toggle="tab" href="#tab-status" role="tab" aria-controls="tab-status" aria-selected="false"><span class="d-block">Статус ордера</span></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-body">
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="tab-table" role="tabpanel" aria-labelledby="tab-table">
+                        <div class="table-responsive py-4">
+                            <table id="table" class="table table-flush" style="width: 100%">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Создан</th>
+                                        <th>Ордер</th>
+                                        <th>Продукт</th>
+                                        <th>Последние ответы</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="tab-create" role="tabpanel" aria-labelledby="tab-create">
+
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="mb-4">
+                                    <label>Ордер</label>
+                                    <input type="number" class="form-control" id="orderCreate">
+                                    <small class="form-text text-muted">Номер ордера указывается в целочисленном значении</small>
+                                </div>
+                                <div class="mb-4">
+                                    <label>Email</label>
+                                    <input type="text" class="form-control" id="email">
+                                    <small class="form-text text-muted">Email на который будет выслан продукт</small>
+                                </div>
+                                <div class="mb-4">
+                                    <label>Продукт</label>
+                                    <input type="text" class="form-control" id="productName">
+                                    <small class="form-text text-muted">Наименование продукта</small>
+                                </div>
+                                <div class="mb-4">
+                                    <label>ID Продукта</label>
+                                    <input type="text" class="form-control" id="productId">
+                                    <small class="form-text text-muted">ID продукта в системе магазина</small>
+                                </div>
+                                <div class="mb-4">
+                                    <label>Сумма</label>
+                                    <input type="number" class="form-control" id="productAmount">
+                                    <small class="form-text text-muted">Итоговая сумма ордера</small>
+                                </div>
+                                <button class="btn btn-gray-800 animate-up-2 mb-3" type="submit" onclick="createOrder();">Создать ордер</button>
+                            </div>
+                            <div class="col-lg-8">
+                                <label for="textarea">Ответ</label>
+                                <textarea class="form-control" id="jsonCreateText" rows="17"></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="tab-pane fade" id="tab-status" role="tabpanel" aria-labelledby="tab-status">
+
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="mb-4">
+                                    <label>Действующий ордер</label>
+                                    <input type="number" class="form-control" id="orderStatus">
+                                    <small class="form-text text-muted">Номер ордера указывается в целочисленном значении</small>
+                                </div>
+                                <button class="btn btn-gray-800 animate-up-2 mb-3" type="submit" onclick="statusOrder();">Получить статус ордера</button>
+                            </div>
+                            <div class="col-lg-8">
+                                <label for="textarea">Ответ</label>
+                                <textarea class="form-control" id="jsonStatusText" rows="17"></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="responseModal" tabindex="-1" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="h6 modal-title">Ответ</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-4">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <svg class="icon icon-xs text-gray-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>
+                        </span>
+                        <input type="datetime" class="form-control" id="dateResponse">
+                    </div>
+                </div>
+                <textarea class="form-control" id="jsonResponseText" rows="17"></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var merchant = document.querySelector('#merchant');
+    var modal = new bootstrap.Modal(document.getElementById('responseModal'));
+
+    var reloadShowInfo = false;
+
+    function reloadData(){
+        reloadShowInfo = true;
+        $('#table').DataTable().ajax.reload();
+    }
+
+    function createOrder(){
+        let data = {
+            orderId: parseInt(document.querySelector('#orderCreate').value),
+            amount: parseFloat(document.querySelector('#productAmount').value),
+            product: document.querySelector('#productName').value,
+            productId: document.querySelector('#productId').value,
+            email: document.querySelector('#email').value
+        };
+
+        APIOp((json) => {
+                document.getElementById('jsonCreateText').value = JSON.stringify(json, undefined, 4)
+            }, `./merchanttransactioncreate?merchant=${merchant.options[merchant.options.selectedIndex].value}`, { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+    }
+
+    function statusOrder(){
+        let data = {
+            orderId: parseInt(document.querySelector('#orderStatus').value)
+        };
+
+        APIOp((json) => {
+                document.getElementById('jsonStatusText').value = JSON.stringify(json, undefined, 4);
+            }, `./merchanttransactionstatus?merchant=${merchant.options[merchant.options.selectedIndex].value}`, { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+    }
+
+    function showLastCreateResponse(e) {
+        let data = $('#table').DataTable().row($(e).parents('tr')).data();
+        document.getElementById('jsonResponseText').value = JSON.stringify(JSON.parse(data.createResponse), undefined, 4);
+        document.getElementById('dateResponse').value = moment(data.createDate).format('DD.MM.yyyy HH:mm:ss');
+        modal.show();
+    }
+
+    function showLastStatusResponse(e) {
+        let data = $('#table').DataTable().row($(e).parents('tr')).data();
+        document.getElementById('jsonResponseText').value = JSON.stringify(JSON.parse(data.statusResponse), undefined, 4);
+        document.getElementById('dateResponse').value = moment(data.statusDate).format('DD.MM.yyyy HH:mm:ss');
+        modal.show();
+    }
+
+    function showSuccessfulResponse(e) {
+        let data = $('#table').DataTable().row($(e).parents('tr')).data();
+        document.getElementById('jsonResponseText').value = JSON.stringify(JSON.parse(data.successfulResponse), undefined, 4);
+        document.getElementById('dateResponse').value = moment(data.successfulDate).format('DD.MM.yyyy HH:mm:ss');
+        modal.show();
+    }
+
+    $(document).ready(function() {
+        $('#table').DataTable({
+            language: { url: '/lib/datatables/ru.json' },
+            lengthChange: false,
+            pageLength: 50,
+            stateSave: true,
+            order: [[0, 'desc']],
+            info: false,
+            serverSide: true,
+            ajax: function (data, callback, settings) {
+                APITableWithPreload(function() { if (reloadShowInfo) { showSuccess(`Данные обновлены`); reloadShowInfo = false; } },
+                    callback,
+                    `./merchantorders?merchant=${merchant.options[merchant.options.selectedIndex].value}`,
+                    { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+            },
+            columns: [
+                { title: "#", data: "id" },
+                { title: "Создан", data: "date", render: function ( data, type, row, meta ) { if (type === 'display') { return moment(data).format('HH:mm') } else { return moment(data).unix() } } },
+                { title: "Ордер", data: "orderId", orderable: false },
+                { title: "Продукт", data: "product", orderable: false },
+                { title: "Последние ответы", data: null, orderable: false, className: 'text-center', render: function ( data, type, row, meta ) { return '<div class="btn-group"><button type="button" class="btn btn-sm btn-outline-gray-600" onclick="showLastCreateResponse(this);">Создание</button><button type="button" class="btn btn-sm btn-outline-gray-600" onclick="showLastStatusResponse(this);">Статус</button><button type="button" class="btn btn-sm btn-outline-gray-600" onclick="showSuccessfulResponse(this);">Email</button></div>' } }
+            ]
+        });
+    });
+</script>
+}

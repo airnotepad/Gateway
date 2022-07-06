@@ -1,0 +1,217 @@
+﻿@using Gateway.Entity
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="fs-5 fw-bold mb-0">Пользователи</h2>
+                    </div>
+                    <div class="col text-end">
+                        <a href="#" class="btn btn-sm btn-primary animate-up-2" onclick="modalInvite.show();">
+                            <span>Приглашения</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive py-4">
+                <table id="table" class="table table-flush" style="width: 100%">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Имя</th>
+                            <th>Допуск</th>
+                            <th>Процент</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="h6 modal-title">Пользователь</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label>ID</label>
+                    <input type="text" class="form-control" id="id" disabled>
+                </div>
+                <div class="mb-3">
+                    <label>Имя пользователя</label>
+                    <input type="text" class="form-control" id="username" disabled>
+                </div>
+                <div class="mb-3">
+                    <label>Роль</label>
+                    <input type="text" class="form-control" id="role" disabled>
+                    <small class="form-text text-muted">Роль пользователя в системе</small>
+                </div>
+                <div class="mb-3">
+                    <label>Процент</label>
+                    <input type="text" class="form-control" id="percent">
+                    <small class="form-text text-muted">Процент, который вычитается из суммы транзакций</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="saveUser();">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="inviteModal" tabindex="-1" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="h6 modal-title">Приглашения</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3 align-items-center">
+                    <div class="row align-items-center mb-3">
+                        <label class="col-auto col-form-label">Новое приглашение</label>
+                        <input type="text" class="col form-control" id="inviteText" placeholder="Текст">
+                        <small class="col-auto text-muted">Используется при регистрации</small>
+                    </div>
+                    <div class="text-center mb-3">
+                        <button type="button" class="btn btn-secondary" onclick="addInvite();">Добавить новое приглашение</button>
+                    </div>
+                    <hr>
+                </div>
+                <div class="row mb-3">
+                    <div class="table-responsive">
+                        <table id="inviteTable" class="table table-flush" style="width: 100%">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Приглашение</th>
+                                    <th>Использовано</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var modalUser = new bootstrap.Modal(document.getElementById('userModal'));
+    var modalId = document.querySelector('#id');
+    var modalUsername = document.querySelector('#username');
+    var modalRole = document.querySelector('#role');
+    var modalPercent = document.querySelector('#percent');
+
+    var modalInvite = new bootstrap.Modal(document.getElementById('inviteModal'));
+    var modalInviteText = document.querySelector('#inviteText');
+
+
+    function editUser(e){
+        let data = $('#table').DataTable().row($(e).parents('tr')).data();
+
+        modalId.value = data.id;
+        modalUsername.value = data.username;
+        modalRole.value = data.role;
+        modalPercent.value = data.percent;
+
+        modalUser.show();
+    }
+
+    function saveUser(){
+        let data = {
+            Id: parseInt(modalId.value),
+            username: modalUsername.value,
+            role: modalRole.value,
+            percent: parseFloat(modalPercent.value),
+        };
+
+        APIOp((json) => {
+                showSuccess('Успешно');
+                $('#table').DataTable().ajax.reload();
+                modalUser.hide();
+            }, `./saveuser`, { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+    }
+
+    function addInvite(){
+        let data = {
+            text: modalInviteText.value
+        };
+
+        APIOp((json) => {
+            if (json)
+                showSuccess('Успешно');
+                $('#inviteTable').DataTable().ajax.reload();
+                modalInviteText.value = '';
+            }, `./addinvite`, { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+    }
+
+    function deleteInvite(e){
+        let row = $('#inviteTable').DataTable().row($(e).parents('tr')).data();
+
+        let data = {
+            text: row.text
+        };
+
+        APIOp((json) => {
+            if (json)
+                showSuccess('Успешно');
+                $('#inviteTable').DataTable().ajax.reload();
+            }, `./deleteinvite`, { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+    }
+
+    $(document).ready(function() {
+        $('#table').DataTable({
+            language: { url: '/lib/datatables/ru.json' },
+            lengthChange: false,
+            pageLength: 50,
+            stateSave: true,
+            order: [[0, 'asc']],
+            serverSide: true,
+            ajax: function (data, callback, settings) {
+                APITable(callback,
+                    `./userstable`,
+                    { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+            },
+            columns: [
+                { title: "#", data: "id" },
+                { title: "Имя", data: "username" },
+                { title: "Допуск", data: "role" },
+                { title: "Процент", data: "percent" },
+                { title: "", data: null, orderable: false, render: function ( data, type, row, meta ) { return `<button class="btn btn-sm btn-outline-danger" type="button" onclick="editUser(this);">Изменить</button>` } }
+            ]
+        });
+
+        $('#inviteTable').DataTable({
+            language: { url: '/lib/datatables/ru.json' },
+            lengthChange: false,
+            pageLength: 10,
+            stateSave: true,
+            info: false,
+            searching: false,
+            ordering: false,
+            ajax: function (data, callback, settings) {
+                APITable(callback,
+                    `./invitestable`,
+                    { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+            },
+            columns: [
+                { title: "Приглашение", data: "text" },
+                { title: "Использовано", data: "isUsed", render: function ( data, type, row, meta ) { if (data) { return `<div class="d-flex align-items-center"><div class="bg-danger dot rounded-circle me-1"></div><small>Да</small></div>` } else { return `<div class="d-flex align-items-center"><div class="bg-success dot rounded-circle me-1"></div><small>Нет</small></div>` } } },
+                { title: "", data: null, orderable: false, className: "text-center", render: function ( data, type, row, meta ) { return `<button class="btn btn-sm btn-outline-danger" type="button" onclick="deleteInvite(this);">Удалить</button>` } }
+            ]
+        });
+    });
+</script>
+}

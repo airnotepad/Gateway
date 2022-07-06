@@ -1,0 +1,144 @@
+﻿@using Gateway.Entity
+@{
+    ViewData["Title"] = "Payouts";
+}
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="fs-5 fw-bold mb-0">Выплаты</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive py-4">
+                <table id="table" class="table table-flush" style="width: 100%">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Время</th>
+                            <th>Имя</th>
+                            <th>Сумма</th>
+                            <th>Пояснение</th>
+                            <th>Статус</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="withdrawModal" tabindex="-1" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="h6 modal-title">Вывод</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label>ID</label>
+                    <input type="text" class="form-control" id="id" disabled>
+                </div>
+                <div class="mb-3">
+                    <label>Пользователь</label>
+                    <input type="text" class="form-control" id="user" disabled>
+                </div>
+                <div class="mb-3">
+                    <label>Дата</label>
+                    <input type="text" class="form-control" id="date" disabled>
+                </div>
+                <div class="mb-3">
+                    <label>Сумма</label>
+                    <input type="text" class="form-control" id="amount" disabled>
+                </div>
+                <div class="mb-3">
+                    <label>Пояснение</label>
+                    <input type="text" class="form-control" id="description" disabled>
+                    <small class="form-text text-muted">Дополнительное описание вывода</small>
+                </div>
+                <div>
+                    <label>Статус</label>
+                    <select class="form-select" id="status" required="" disabled>
+                        @foreach (Gateway.Entity.WithdrawStatus status in Enum.GetValues(typeof(Gateway.Entity.WithdrawStatus)))
+                        {
+                            <option value="@((int)status)">@status.GetValue()</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                @*<button type="button" class="btn btn-secondary" onclick="changeWithdraw();" >Сохранить</button>*@
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var merchantProductModal = new bootstrap.Modal(document.getElementById('withdrawModal'));
+    var modalId = document.querySelector('#id');
+    var modalUser = document.querySelector('#user');
+    var modalDate = document.querySelector('#date');
+    var modalAmount = document.querySelector('#amount');
+    var modalDescription = document.querySelector('#description');
+    var modalStatus = document.querySelector('#status');
+
+    function changeStatus(e)
+    {
+        let data = $('#table').DataTable().row($(e).parents('tr')).data();
+
+        modalId.value = data.id;
+        modalUser.value = data.username;
+        modalDate.value = moment(data.date).format('DD.MM.yyyy HH:mm:ss');
+        modalAmount.value = data.amount;
+        modalDescription.value = data.description;
+        modalStatus.value = data.status;
+
+        merchantProductModal.show();
+    }
+
+    function getStatus(status){
+        switch (status) {
+        case 0:
+            return '<div class="d-flex align-items-center"><div class="bg-warning dot rounded-circle me-1"></div><span>Ожидает выплаты</span></div>'
+        case 1:
+            return '<div class="d-flex align-items-center"><div class="bg-warning dot rounded-circle me-1"></div><span>В обработке</span></div>'
+        case 2:
+            return '<div class="d-flex align-items-center"><div class="bg-success dot rounded-circle me-1"></div><span>Выплачена</span></div>'
+        case 3:
+            return '<div class="d-flex align-items-center"><div class="bg-warning dot rounded-circle me-1"></div><span>Отменена</span></div>'
+        }
+    }
+
+    $(document).ready(function() {
+
+        $('#table').DataTable({
+            language: { url: '/lib/datatables/ru.json' },
+            lengthChange: false,
+            pageLength: 50,
+            stateSave: true,
+            order: [[1, 'desc']],
+            serverSide: true,
+            ajax: function (data, callback, settings) {
+                APITable(callback,
+                    `./payoutstable`,
+                    { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+            },
+            columns: [
+                { title: "#", data: "id" },
+                { title: "Время", data: "date", render: function ( data, type, row, meta ) { if (type === 'display') { return moment(data).format('HH:mm') } else { return moment(data).unix() } } },
+                { title: "Имя", data: "username" },
+                { title: "Сумма", data: "amount" },
+                { title: "Пояснение", data: "description" },
+                { title: "Статус", data: "status", render: function ( data, type, row, meta ) { if (type === 'display') { return getStatus(data) } else { return data } } },
+                { title: "", data: null, className: "text-center", orderable: false, render: function ( data, type, row, meta ) { return `<button class="btn btn-sm btn-outline-danger" type="button" onclick="changeStatus(this);">Изменить</button>` } }
+            ]
+        });
+    });
+</script>
+}

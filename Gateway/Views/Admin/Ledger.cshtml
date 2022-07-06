@@ -1,0 +1,94 @@
+﻿@using Gateway.Entity
+@{
+    ViewData["Title"] = "Ledger";
+}
+
+<div class="col-12 mb-4">
+    <div class="card card-body border-0 shadow">
+        <div class="d-flex flex-row align-items-center">
+            <h2 class="fs-5 fw-bold mb-0 pe-3 text-nowrap">Сводка по</h2>
+            <select class="form-select" id="userSelect" required="", onchange="updateLegger(value);">
+                @foreach (Gateway.Entity.User user in ViewBag.Users)
+                {
+                    <option value="@user.Id">@user.Username</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="fs-5 fw-bold mb-0">Начисления баланса</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive py-4">
+                <table id="table" class="table table-flush" style="width: 100%">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Время</th>
+                            <th>Имя</th>
+                            <th>Сумма</th>
+                            <th>Основание</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var userSelect = document.querySelector('#userSelect');
+    
+    function updateLegger(value) {
+        $('#table').DataTable().ajax.reload();
+    }
+
+    function formatAmount(type, amount) {
+        if (type == 0)
+        {
+            return `<div class="d-flex">
+                <svg class="icon icon-xs text-success me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                ${amount}
+            </div>`;
+        }
+        else if (type == 1) {
+            return `<div class="d-flex">
+                <svg class="icon icon-xs text-danger me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                ${amount}
+            </div>`;
+        }
+    }
+
+    $(document).ready(function() {
+        $('#table').DataTable({
+            language: { url: '/lib/datatables/ru.json' },
+            lengthChange: false,
+            pageLength: 50,
+            stateSave: true,
+            order: [[0, 'desc']],
+            info: false,
+            ajax: function (data, callback, settings) {
+                APITable(callback,
+                    `/admin/ledgertable?userid=${userSelect.options[userSelect.options.selectedIndex].value}`,
+                    { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+            },
+            columns: [
+                { title: "#", data: "id" },
+                { title: "Дата", data: "date", render: function ( data, type, row, meta ) { if (type === 'display') { return moment(data).format('DD.MM.yyyy HH:mm:ss') } else { return moment(data).unix() } } },
+                { title: "Имя", data: "username" },
+                { title: "Сумма", data: "userAmount", orderable: false, render: function ( data, type, row, meta ) { return formatAmount(row.form, row.userAmount) } },
+                { title: "Основание", data: "reason" }
+            ]
+        });
+    });
+</script>
+}

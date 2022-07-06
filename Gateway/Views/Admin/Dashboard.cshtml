@@ -1,0 +1,303 @@
+﻿@using Gateway.Entity
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="col-12 mb-4">
+    <div class="card card-body border-0 shadow">
+        <div class="d-flex flex-row align-items-center">
+            <h2 class="fs-5 fw-bold mb-0 pe-3 text-nowrap">Сводка по</h2>
+            <select class="form-select" id="userSelect" required="", onchange="updateInfo(value);">
+                @foreach (Gateway.Entity.User user in ViewBag.Users)
+                {
+                    <option value="@user.Id">@user.Username</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-sm-6 col-xl-3 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <div class="row d-block d-xl-flex align-items-center">
+                    <div class="col-12 col-xl-5 text-xl-center mb-3 mb-xl-0 d-flex align-items-center justify-content-xl-center">
+                        <div class="icon-shape icon-shape-secondary rounded me-4 me-sm-0">
+                            <svg class="icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"></path></svg>
+                        </div>
+                        <div class="d-sm-none">
+                            <h2 class="fw-extrabold h5">Доступный вывод</h2>
+                            <h3 class="mb-1" id="balance_s">0 ₽</h3>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-7 px-xl-0">
+                        <div class="d-none d-sm-block">
+                            <h2 class="h6 text-gray-400 mb-0">Доступный вывод</h2>
+                            <h3 class="fw-extrabold mb-2" id="balance_b">0 ₽</h3>
+                        </div>
+                        <small class="d-flex align-items-center text-gray-500">
+                            Доступный баланс
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <div class="row d-block d-xl-flex align-items-center">
+                    <div class="col-12 col-xl-5 text-xl-center mb-3 mb-xl-0 d-flex align-items-center justify-content-xl-center">
+                        <div class="icon-shape icon-shape-tertiary rounded me-4 me-sm-0">
+                            <svg class="icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                        </div>
+                        <div class="d-sm-none">
+                            <h2 class="fw-extrabold h5">Оборот</h2>
+                            <h3 class="mb-1" id="turnover_s">0 ₽</h3>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-7 px-xl-0">
+                        <div class="d-none d-sm-block">
+                            <h2 class="h6 text-gray-400 mb-0">Оборот</h2>
+                            <h3 class="fw-extrabold mb-2" id="turnover_b">0 ₽</h3>
+                        </div>
+                        <small class="text-gray-500">
+                            Оборот в этом месяце
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <div class="row d-block d-xl-flex align-items-center">
+                    <div class="col-12 col-xl-5 text-xl-center mb-3 mb-xl-0 d-flex align-items-center justify-content-xl-center">
+                        <div class="icon-shape icon-shape-tertiary rounded me-4 me-sm-0">
+                            <svg class="icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                        </div>
+                        <div class="d-sm-none">
+                            <h2 class="fw-extrabold h5">Чистая прибыль</h2>
+                            <h3 class="mb-1" id="profit_s">0 ₽</h3>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-7 px-xl-0">
+                        <div class="d-none d-sm-block">
+                            <h2 class="h6 text-gray-400 mb-0">Чистая прибыль</h2>
+                            <h3 class="fw-extrabold mb-2" id="profit_b">0 ₽</h3>
+                        </div>
+                        <small class="text-gray-500">
+                            Профит в этом месяце
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-12 mb-4">
+    <div class="card border-0 shadow">
+        <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="fs-5 fw-bold mb-0">Невыплаченные выводы</h2>
+                    </div>
+                </div>
+            </div>
+        <div class="card-body p-0 pb-3">
+            <div class="table-responsive">
+                <table id="withdrawTable" class="table table-flush" style="width: 100%">
+                    <thead>
+                        <tr>
+                            <th>Время</th>
+                            <th>Сумма</th>
+                            <th>Пояснение</th>
+                            <th>Статус</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-12 mb-4">
+    <div class="card border-0 shadow">
+        <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="fs-5 fw-bold mb-0">Активные транзакции</h2>
+                    </div>
+                </div>
+            </div>
+        <div class="card-body p-0 pb-3">
+            <div class="table-responsive">
+                <table id="transactionsTable" class="table table-flush" style="width: 100%">
+                    <thead>
+                        <tr>
+                            <th>Время</th>
+                            <th>Платеж для</th>
+                            <th>Сумма</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var userSelect = document.querySelector('#userSelect');
+
+    function updateAccountInfo(){
+        APIOp((json) => {
+
+            let rubble = new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' });
+            let balance = rubble.format(json.balance);
+            let turnover = rubble.format(json.turnover);
+            let profit = rubble.format(json.profit);
+
+                document.querySelector('#balance_s').textContent = balance;
+                document.querySelector('#balance_b').textContent = balance;
+                document.querySelector('#turnover_s').textContent = turnover;
+                document.querySelector('#turnover_b').textContent = turnover;
+                document.querySelector('#profit_s').textContent = profit;
+                document.querySelector('#profit_b').textContent = profit;
+
+            }, `/admin/accountinfo?username=${userSelect.options[userSelect.options.selectedIndex].text}`);
+    }
+
+    function updateInfo(value) {
+        $('#withdrawTable').DataTable().ajax.reload();
+        $('#transactionsTable').DataTable().ajax.reload();
+        updateAccountInfo();
+    }
+
+    function getStatusWithdraw(status){
+        switch (status) {
+        case 0:
+            return '<div class="d-flex align-items-center"><div class="bg-warning dot rounded-circle me-1"></div><span>Ожидает выплаты</span></div>'
+        case 1:
+            return '<div class="d-flex align-items-center"><div class="bg-warning dot rounded-circle me-1"></div><span>В обработке</span></div>'
+        case 2:
+            return '<div class="d-flex align-items-center"><div class="bg-success dot rounded-circle me-1"></div><span>Выплачена</span></div>'
+        case 3:
+            return '<div class="d-flex align-items-center"><div class="bg-warning dot rounded-circle me-1"></div><span>Отменена</span></div>'
+        }
+    }
+
+    function getStatus(status){
+        switch (status) {
+        case 0:
+            return '<div class="d-flex align-items-center"><div class="bg-warning dot rounded-circle me-1"></div><span>Ожидает оплаты</span></div>'
+        case 1:
+            return '<div class="d-flex align-items-center"><div class="bg-success dot rounded-circle me-1"></div><span>Оплачено</span></div>'
+        case 2:
+            return '<div class="d-flex align-items-center"><div class="bg-danger dot rounded-circle me-1"></div><span>Истек срок</span></div>'
+        case 3:
+            return '<div class="d-flex align-items-center"><div class="bg-danger dot rounded-circle me-1"></div><span>Ошибка оплаты</span></div>'
+        }
+    }
+
+    function getWithdrawButtons(status){
+        switch (status) {
+        case 0:
+            return '<div class="btn-group"><button type="button" class="btn btn-sm btn-outline-gray-600" onclick="startWithdrawProcess(this);">Начать выплату</button></div>'
+        case 1:
+            return '<div class="btn-group"><button type="button" class="btn btn-sm btn-outline-danger" onclick="cancelWithdrawProcess(this);">Отменить</button><button type="button" class="btn btn-sm btn-outline-success" onclick="completeWithdrawProcess(this);">Завершить</button></div>'
+        case 2:
+            return ''
+        case 3:
+            return ''
+        }
+    }
+
+    function startWithdrawProcess(e){
+        let data = $('#withdrawTable').DataTable().row($(e).parents('tr')).data();
+
+        APIOp((json) => {
+            if (json)
+                showSuccess('Успешно');
+                updateAccountInfo()
+                $('#withdrawTable').DataTable().ajax.reload()
+            }, `/admin/startprocessingwithdraw?id=${data.id}`);
+    }
+    function completeWithdrawProcess(e){
+        let data = $('#withdrawTable').DataTable().row($(e).parents('tr')).data();
+
+        APIOp((json) => {
+            if (json)
+                showSuccess('Успешно завершено');
+                updateAccountInfo()
+                $('#withdrawTable').DataTable().ajax.reload()
+            }, `/admin/completeprocessingwithdraw?id=${data.id}`);
+    }
+    function cancelWithdrawProcess(e){
+        let data = $('#withdrawTable').DataTable().row($(e).parents('tr')).data();
+
+        APIOp((json) => {
+            if (json)
+                showSuccess('Успешно отменено');
+                updateAccountInfo()
+                $('#withdrawTable').DataTable().ajax.reload()
+            }, `/admin/cancelprocessingwithdraw?id=${data.id}`);
+    }
+
+    $(document).ready(function() {
+
+        updateAccountInfo();
+
+        $('#withdrawTable').DataTable({
+            language: { url: '/lib/datatables/ru.json' },
+            lengthChange: false,
+            pageLength: 10,
+            stateSave: true,
+            order: [[1, 'desc']],
+            info: false,
+            searching: false,
+            ordering: false,
+            ajax: function (data, callback, settings) {
+                APITable(callback,
+                    `/admin/dashboardwaitingwithdrawtable?userid=${userSelect.options[userSelect.options.selectedIndex].value}`,
+                    { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+            },
+            columns: [
+                { title: "Время", data: "date", render: function ( data, type, row, meta ) { if (type === 'display') { return moment(data).format('HH:mm') } else { return moment(data).unix() } } },
+                { title: "Сумма", data: "amount" },
+                { title: "Пояснение", data: "description" },
+                { title: "Статус", data: "status", render: function ( data, type, row, meta ) { if (type === 'display') { return getStatusWithdraw(data) } else { return data } } },
+                { title: "", data: null, className: "text-center", render: function ( data, type, row, meta ) { return getWithdrawButtons(row.status) } }
+            ]
+        });
+
+        $('#transactionsTable').DataTable({
+            language: { url: '/lib/datatables/ru.json' },
+            lengthChange: false,
+            pageLength: 10,
+            stateSave: true,
+            order: [[1, 'desc']],
+            info: false,
+            searching: false,
+            ordering: false,
+            ajax: function (data, callback, settings) {
+                APITable(callback,
+                    `/admin/dashboardactivetransactionstable?userid=${userSelect.options[userSelect.options.selectedIndex].value}`,
+                    { method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' }, body: JSON.stringify(data) });
+            },
+            columns: [
+                { title: "Время", data: "create_date", render: function ( data, type, row, meta ) { if (type === 'display') { return moment(data).format('HH:mm') } else { return moment(data).unix() } } },
+                { title: "Платеж для", data: "description" },
+                { title: "Сумма", data: "amount", render: function ( data, type, row, meta ) { if (type === 'display') { return `${data} ₽ (${row.user_amount} ₽)` } else { return data } } },
+                { title: "Статус", data: "status", render: function ( data, type, row, meta ) { if (type === 'display') { return getStatus(data) } else { return data } } }
+            ]
+        });
+
+    });
+</script>
+}
